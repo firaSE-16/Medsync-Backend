@@ -1,0 +1,29 @@
+# Node modules
+node_modules/
+
+# Environment variables
+.env
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# Optional: Ignore database data dumps or coverage files
+*.sqlite
+*.tgz
+coverage/
+
+# IDE-specific
+.vscode/
+.idea/
+
+# Build output (if any)
+dist/
+build/
