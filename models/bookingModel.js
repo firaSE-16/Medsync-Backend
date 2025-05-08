@@ -7,7 +7,21 @@ const BookingSchema = new Schema({
         ref: 'User', 
         required: true 
     },
-    symptoms: { type: String, required: true },
+    lookingFor: {
+        type: String,
+        required: true,
+        enum: [
+            'dermatologist',
+            'pathologist',
+            'cardiologist',
+            'neurologist',
+            'pediatrician',
+            'psychiatrist',
+            'general physician',
+            'dentist',
+           
+        ]
+    },
     priority: { 
         type: String, 
         enum: ['low', 'medium', 'high', 'emergency'], 

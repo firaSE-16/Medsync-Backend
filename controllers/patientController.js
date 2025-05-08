@@ -1,4 +1,3 @@
-
 const Prescription = require('../models/prescriptionModel');
 const MedicalHistory = require('../models/medicalHistoryModel');
 
@@ -118,18 +117,38 @@ exports.getPatientBookings = asyncHandler(async (req, res) => {
 // @access  Private/Patient
 exports.createBooking = asyncHandler(async (req, res) => {
   const patientId = req.user.id;
-  const { symptoms, priority, preferredDate, preferredTime } = req.body;
+  const { priority, preferredDate, preferredTime, lookingFor } = req.body;
 
-  if (!symptoms) {
+  if (!lookingFor) {
     return res.status(400).json({
       success: false,
-      message: 'Symptoms description is required'
+      message: 'Please specify which type of doctor you are looking for'
+    });
+  }
+
+  const allowedSpecialties = [
+    'dermatologist',
+    'pathologist',
+    'cardiologist',
+    'neurologist',
+    'pediatrician',
+    'psychiatrist',
+    'general physician',
+    'dentist',
+   
+  ];
+
+  if (!allowedSpecialties.includes(lookingFor)) {
+    return res.status(400).json({
+      success: false,
+      message: 'Invalid specialty. Please choose from the allowed specialties',
+      allowedSpecialties
     });
   }
 
   const booking = new Booking({
     patientId,
-    symptoms,
+    lookingFor,
     priority: priority || 'medium',
     preferredDate,
     preferredTime,
