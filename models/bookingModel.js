@@ -7,6 +7,7 @@ const BookingSchema = new Schema({
         ref: 'User', 
         required: true 
     },
+    patientName:{type:String},
     lookingFor: {
         type: String,
         required: true,

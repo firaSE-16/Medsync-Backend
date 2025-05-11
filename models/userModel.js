@@ -27,8 +27,13 @@ UserSchema.add({
     bloodGroup: { type: String },
     emergencyContactName: { type: String },
     emergencyContactNumber: { type: String },
+    
     // Doctor-specific fields
     specialization: { type: String },
+    phone: { type: String },
+    rating: {type : Number},
+    hospital:{type: String},
+    experienceYears:{type : Number},
     qualifications: { type: String },
     licenseNumber: { type: String },
     department: { type: String },

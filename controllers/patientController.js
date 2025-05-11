@@ -115,10 +115,14 @@ exports.getPatientBookings = asyncHandler(async (req, res) => {
 // @desc    Create new booking
 // @route   POST /api/patient/bookings
 // @access  Private/Patient
+// @desc    Create new booking
+// @route   POST /api/patient/bookings
+// @access  Private/Patient
 exports.createBooking = asyncHandler(async (req, res) => {
   const patientId = req.user.id;
-  const { priority, preferredDate, preferredTime, lookingFor } = req.body;
+  const { priority, preferredDate, preferredTime, lookingFor, notes, patientName } = req.body;
 
+  // Input validation
   if (!lookingFor) {
     return res.status(400).json({
       success: false,
@@ -135,10 +139,9 @@ exports.createBooking = asyncHandler(async (req, res) => {
     'psychiatrist',
     'general physician',
     'dentist',
-   
   ];
 
-  if (!allowedSpecialties.includes(lookingFor)) {
+  if (!allowedSpecialties.includes(lookingFor.toLowerCase())) {
     return res.status(400).json({
       success: false,
       message: 'Invalid specialty. Please choose from the allowed specialties',
@@ -146,12 +149,50 @@ exports.createBooking = asyncHandler(async (req, res) => {
     });
   }
 
+  // Validate date and time
+  if (!preferredDate || !preferredTime) {
+    return res.status(400).json({
+      success: false,
+      message: 'Preferred date and time are required'
+    });
+  }
+
+  const bookingDateTime = new Date(`${preferredDate}T${preferredTime}`);
+  if (isNaN(bookingDateTime.getTime())) 
+    return res.status(400).json({
+      success: false,
+      message: 'Invalid date/time format'
+    });
+  
+
+  if (bookingDateTime < new Date()) {
+    return res.status(400).json({
+      success: false,
+      message: 'Booking date/time cannot be in the past'
+    });
+  }
+
+  // Get patient details if name not provided
+  let finalPatientName = patientName;
+  if (!finalPatientName) {
+    const patient = await User.findById(patientId).select('name');
+    if (!patient) {
+      return res.status(404).json({
+        success: false,
+        message: 'Patient not found'
+      });
+    }
+    finalPatientName = patient.name;
+  }
+
   const booking = new Booking({
     patientId,
-    lookingFor,
+    patientName: finalPatientName,
+    lookingFor: lookingFor.toLowerCase(),
     priority: priority || 'medium',
     preferredDate,
     preferredTime,
+    notes: notes || '',
     status: 'pending'
   });
 
@@ -163,6 +204,55 @@ exports.createBooking = asyncHandler(async (req, res) => {
     data: booking
   });
 });
+// exports.createBooking = asyncHandler(async (req, res) => {
+//   const patientId = req.user.id;
+//   const { priority, preferredDate, preferredTime, lookingFor } = req.body;
+
+//   if (!lookingFor) {
+//     return res.status(400).json({
+//       success: false,
+//       message: 'Please specify which type of doctor you are looking for'
+//     });
+//   }
+
+//   const allowedSpecialties = [
+//     'dermatologist',
+//     'pathologist',
+//     'cardiologist',
+//     'neurologist',
+//     'pediatrician',
+//     'psychiatrist',
+//     'general physician',
+//     'dentist',
+   
+//   ];
+
+//   if (!allowedSpecialties.includes(lookingFor)) {
+//     return res.status(400).json({
+//       success: false,
+//       message: 'Invalid specialty. Please choose from the allowed specialties',
+//       allowedSpecialties
+//     });
+//   }
+
+//   const booking = new Booking({
+//     patientId,
+//     patientName,
+//     lookingFor,
+//     priority: priority || 'medium',
+//     preferredDate,
+//     preferredTime,
+//     status: 'pending'
+//   });
+
+//   await booking.save();
+//   await booking.populate('patientId', 'name email');
+
+//   res.status(201).json({
+//     success: true,
+//     data: booking
+//   });
+// });
 
 // @desc    Cancel booking
 // @route   PUT /api/patient/bookings/:id/cancel

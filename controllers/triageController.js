@@ -11,6 +11,8 @@ const asyncHandler = require('express-async-handler');
 exports.getUnassignedBookings = asyncHandler(async (req, res) => {
   const { page = 1, limit = 10 } = req.query;
   const startIndex = (page - 1) * limit;
+  const endIndex = 100
+  
 
   const total = await Booking.countDocuments({ status: 'pending' });
   const bookings = await Booking.find({ status: 'pending' })
@@ -18,10 +20,11 @@ exports.getUnassignedBookings = asyncHandler(async (req, res) => {
     .sort({ createdAt: 1 })
     .skip(startIndex)
     .limit(limit);
+ 
 
   // Pagination result
   const pagination = {};
-  if (endIndex < total) {
+  if (endIndex <= total) {
     pagination.next = {
       page: parseInt(page) + 1,
       limit: parseInt(limit)
@@ -167,5 +170,27 @@ exports.updateMedicalHistory = asyncHandler(async (req, res) => {
   res.status(200).json({
     success: true,
     data: medicalHistory
+  });
+});
+
+
+
+
+// controllers/triageController.js
+
+exports.getPatients = asyncHandler(async (req, res) => {
+  const { department } = req.query;
+  
+  const query = { role: 'patient' };
+  if (department) query.department = department;
+
+  const patients = await User.find(query)
+    .select('name gender age bloodGroup department medicalHistory')
+    .sort({ name: 1 });
+
+  res.status(200).json({
+    success: true,
+    count: patients.length,
+    data: patients
   });
 });

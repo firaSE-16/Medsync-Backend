@@ -35,4 +35,14 @@ router.put(
   triageController.updateMedicalHistory
 );
 
+
+// @route   GET /api/triage/patients
+// @access  Private/Triage
+router.get(
+  '/patients',
+  authenticate,
+  authorize('triage'),
+  triageController.getPatients // Make sure this matches your export
+);
+
 module.exports = router;
