@@ -12,39 +12,10 @@ const MedicalHistorySchema = new Schema({
         ref: 'User', 
         required: true 
     },
-    triageData: {
-        vitals: {
-          bloodPressure: String,
-          heartRate: Number,
-          temperature: Number,
-          oxygenSaturation: Number,
-          weight: Number,
-          height: Number
-        },
-        triageId: {
-          type: Schema.Types.ObjectId,
-          ref: 'User'
-        },
-        triageDate: Date,
-        priority: {
-          type: String,
-          enum: ['low', 'medium', 'high', 'emergency']
-        },
-        notes: String
-    },
-    allergies: [{ type: String }],
-    chronicConditions: [{ type: String }],
-    surgeries: [{
-        name: { type: String },
-        date: { type: Date },
-        notes: { type: String }
-    }],
-    familyHistory: { type: String },
-    immunizations: [{
-        vaccine: { type: String },
-        date: { type: Date },
-        notes: { type: String }
-    }],
+    diagonosis: { type: String },
+    treatment: { type: String },
+    notes: { type: String },
+  
     lastUpdated: { type: Date, default: Date.now }
 });
 

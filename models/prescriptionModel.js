@@ -5,7 +5,7 @@ const PrescriptionSchema = new Schema({
     appointmentId: { 
         type: Schema.Types.ObjectId, 
         ref: 'Appointment', 
-        required: true 
+         
     },
     patientId: { 
         type: Schema.Types.ObjectId, 
@@ -14,20 +14,19 @@ const PrescriptionSchema = new Schema({
     },
     doctorId: { 
         type: Schema.Types.ObjectId, 
-        ref: 'User', 
+        ref: 'User',
         required: true 
     },
     medications: [{
-        name: { type: String, required: true },
-        dosage: { type: String, required: true },
-        frequency: { type: String, required: true },
-        duration: { type: String, required: true },
-        instructions: { type: String }
+        image: { type: String },
+        name: { type: String },
+        dosage: { type: String },
+        frequency: { type: String },
+        description: { type: String },
+        price: { type: Number },
     }],
-    diagnosis: { type: String },
-    notes: { type: String },
-    date: { type: Date, default: Date.now },
-    isActive: { type: Boolean, default: true }
+    
+    
 });
 
 module.exports = mongoose.model('Prescription', PrescriptionSchema);

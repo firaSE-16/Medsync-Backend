@@ -46,20 +46,19 @@ exports.registerStaff = asyncHandler(async (req, res) => {
 
 
 exports.registerAdmin = asyncHandler(async (req, res) => {
+  try {
     const { name, email, password, role, ...otherData } = req.body;
-  
-    
-  
-    // Check if user exists
+
+    if (!name || !email || !password || !role) {
+      return res.status(400).json({ message: 'Missing required fields' });
+    }
+
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: 'User already exists' });
     }
-  
-    // Hash password
+
     const hashedPassword = await bcrypt.hash(password, 12);
-  
-    // Create staff user
     const staff = new User({
       name,
       email,
@@ -67,19 +66,17 @@ exports.registerAdmin = asyncHandler(async (req, res) => {
       role,
       ...otherData
     });
-  
+
     await staff.save();
-  
-    // Return user data without password
     const userData = staff.toObject();
     delete userData.password;
-  
-    res.status(201).json({
-      success: true,
-      data: userData
-    });
-  });
-  
+
+    res.status(201).json({ success: true, data: userData });
+  } catch (error) {
+    console.error('Error in registerAdmin:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});  
 
 // @desc    Get all staff by category
 // @route   GET /api/admin/staff/:role

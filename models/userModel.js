@@ -12,6 +12,8 @@ const UserSchema = new Schema({
         required: true, 
         enum: ['patient', 'doctor', 'triage', 'admin'] 
     },
+    about: { type: String },
+    rating:{type:Number},
     dateOfBirth: { type: Date },
     gender: { type: String, enum: ['male', 'female', 'other'] },
     // Common fields for patients and doctors
@@ -27,7 +29,10 @@ UserSchema.add({
     bloodGroup: { type: String },
     emergencyContactName: { type: String },
     emergencyContactNumber: { type: String },
-    
+    doctorId: [{ 
+        type: Schema.Types.ObjectId, 
+        ref: 'User' 
+    }],
     // Doctor-specific fields
     specialization: { type: String },
     phone: { type: String },

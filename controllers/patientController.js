@@ -261,10 +261,8 @@ exports.cancelBooking = asyncHandler(async (req, res) => {
   const bookingId = req.params.id;
   const patientId = req.user.id;
 
-  const booking = await Booking.findOneAndUpdate(
-    { _id: bookingId, patientId, status: 'pending' },
-    { status: 'cancelled' },
-    { new: true }
+  const booking = await Booking.findOneAndDelete(
+    { _id: bookingId, patientId, status: 'pending' }
   );
 
   if (!booking) {

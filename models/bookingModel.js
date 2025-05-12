@@ -7,7 +7,10 @@ const BookingSchema = new Schema({
         ref: 'User', 
         required: true 
     },
-    patientName:{type:String},
+    patientName: {
+        type: String,
+        required: true
+    },
     lookingFor: {
         type: String,
         required: true,
@@ -20,7 +23,8 @@ const BookingSchema = new Schema({
             'psychiatrist',
             'general physician',
             'dentist',
-           
+            'ophthalmologist',
+            'orthopedist'
         ]
     },
     priority: { 
@@ -28,16 +32,36 @@ const BookingSchema = new Schema({
         enum: ['low', 'medium', 'high', 'emergency'], 
         default: 'medium' 
     },
-    preferredDate: { type: Date },
-    preferredTime: { type: String },
+    preferredDate: { 
+        type: String, 
+        required: true 
+    },
+    preferredTime: { 
+        type: String, 
+        required: true 
+    },
     status: { 
         type: String, 
-        enum: ['pending', 'assigned', 'cancelled'], 
+        enum: ['pending', 'assigned', 'cancelled', 'completed'], 
         default: 'pending' 
     },
-    createdAt: { type: Date, default: Date.now },
-    updatedAt: { type: Date, default: Date.now },
-    notes: { type: String } // For triage/admin notes
+    notes: { 
+        type: String 
+    },
+    createdAt: { 
+        type: Date, 
+        default: Date.now 
+    },
+    updatedAt: { 
+        type: Date, 
+        default: Date.now 
+    }
+});
+
+// Update the updatedAt field before saving
+BookingSchema.pre('save', function(next) {
+    this.updatedAt = Date.now();
+    next();
 });
 
 module.exports = mongoose.model('Booking', BookingSchema);
