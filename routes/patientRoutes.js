@@ -57,6 +57,14 @@ router.get(
   patientController.getPatientAppointments
 );
 
+
+router.get(
+  '/medical-records',
+  authenticate,
+  authorize('patient'),
+  patientController.getPatientMedicalRecords
+);
+
 // Dashboard
 router.get(
   '/dashboard',

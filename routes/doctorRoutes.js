@@ -19,13 +19,7 @@ router.get(
   doctorController.getPatientDetails
 );
 
-// Add medical record
-router.post(
-  '/medical-records',
-  authenticate,
-  authorize('doctor'),
-  doctorController.addMedicalRecord
-);
+
 
 // Add prescription
 router.post(
@@ -49,6 +43,46 @@ router.get(
   authenticate,
   authorize('doctor'),
   doctorController.getDoctorPatients
+);
+
+// Get all medical records for a specific patient
+router.get(
+  '/patients/:patientId/medical-records',
+  authenticate,
+  authorize('doctor'),
+  doctorController.getPatientMedicalRecords
+);
+
+// Get specific medical record details
+router.get(
+  '/medical-records/:recordId',
+  authenticate,
+  authorize('doctor'),
+  doctorController.getMedicalRecordDetails
+);
+
+// Create new medical record for patient
+router.post(
+  '/medical-records',
+  authenticate,
+  authorize('doctor'),
+  doctorController.createMedicalRecord
+);
+
+// Update medical record
+router.put(
+  '/medical-records/:recordId',
+  authenticate,
+  authorize('doctor'),
+  doctorController.updateMedicalRecord
+);
+
+// Delete medical record
+router.delete(
+  '/medical-records/:recordId',
+  authenticate,
+  authorize('doctor'),
+  doctorController.deleteMedicalRecord
 );
 
 module.exports = router;

@@ -349,3 +349,42 @@ exports.getPatientDashboard = asyncHandler(async (req, res) => {
     }
   });
 });
+
+
+// @desc    Get all medical records for a specific patient
+// @route   GET /api/doctor/patients/:patientId/medical-records
+// @access  Private/Doctor
+exports.getPatientMedicalRecords = asyncHandler(async (req, res) => {
+  const patientId = req.user.id
+
+  // Verify the doctor has/had appointments with this patient
+  const hasAppointments = await Appointment.exists({
+    patientId,
+    doctorId,
+    status: { $in: ['scheduled', 'completed'] }
+  });
+
+  if (!hasAppointments) {
+    return res.status(403).json({
+      success: false,
+      message: 'Not authorized to access this patient\'s records'
+    });
+  }
+
+  // Retrieve all records for this patient and doctor
+  const medicalRecords = await MedicalHistory.find({ patientId, doctorId })
+    .populate('doctorId', 'name specialization')
+    .populate('patientId', 'name dateOfBirth gender');
+
+  if (!medicalRecords || medicalRecords.length === 0) {
+    return res.status(404).json({
+      success: false,
+      message: 'No medical records found for this patient'
+    });
+  }
+
+  res.status(200).json({
+    success: true,
+    data: medicalRecords
+  });
+});

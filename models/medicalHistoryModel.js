@@ -12,7 +12,7 @@ const MedicalHistorySchema = new Schema({
         ref: 'User', 
         required: true 
     },
-    diagonosis: { type: String },
+    diagnosis: { type: String },
     treatment: { type: String },
     notes: { type: String },
   

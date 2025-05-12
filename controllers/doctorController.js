@@ -71,49 +71,6 @@ exports.getPatientDetails = asyncHandler(async (req, res) => {
   });
 });
 
-// @desc    Add medical record for patient
-// @route   POST /api/doctor/medical-records
-// @access  Private/Doctor
-exports.addMedicalRecord = asyncHandler(async (req, res) => {
-  const { patientId, diagnosis, treatment, notes } = req.body;
-  const doctorId = req.user.id;
-
-  // Verify doctor has current appointment with patient
-  const currentAppointment = await Appointment.findOne({
-    patientId,
-    doctorId,
-    status: 'scheduled'
-  });
-
-  if (!currentAppointment) {
-    return res.status(403).json({
-      success: false,
-      message: 'No active appointment with this patient'
-    });
-  }
-
-  // Update or create medical history
-  const medicalHistory = await MedicalHistory.findOneAndUpdate(
-    { patientId },
-    {
-      $push: {
-        records: {
-          date: new Date(),
-          doctorId,
-          diagnosis,
-          treatment,
-          notes
-        }
-      }
-    },
-    { new: true, upsert: true }
-  );
-
-  res.status(201).json({
-    success: true,
-    data: medicalHistory
-  });
-});
 
 // @desc    Add prescription for patient
 // @route   POST /api/doctor/prescriptions
@@ -210,5 +167,156 @@ exports.getDoctorPatients = asyncHandler(async (req, res) => {
     success: true,
     count: patients.length,
     data: patients
+  });
+});
+
+// @desc    Get all medical records for a specific patient
+// @route   GET /api/doctor/patients/:patientId/medical-records
+// @access  Private/Doctor
+exports.getPatientMedicalRecords = asyncHandler(async (req, res) => {
+  const { patientId } = req.params;
+  const doctorId = req.user.id;
+
+  // Verify the doctor has/had appointments with this patient
+  const hasAppointments = await Appointment.exists({
+    patientId,
+    doctorId,
+    status: { $in: ['scheduled', 'completed'] }
+  });
+
+  if (!hasAppointments) {
+    return res.status(403).json({
+      success: false,
+      message: 'Not authorized to access this patient\'s records'
+    });
+  }
+
+  // Retrieve all records for this patient and doctor
+  const medicalRecords = await MedicalHistory.find({ patientId, doctorId })
+    .populate('doctorId', 'name specialization')
+    .populate('patientId', 'name dateOfBirth gender');
+
+  if (!medicalRecords || medicalRecords.length === 0) {
+    return res.status(404).json({
+      success: false,
+      message: 'No medical records found for this patient'
+    });
+  }
+
+  res.status(200).json({
+    success: true,
+    data: medicalRecords
+  });
+});
+
+// @desc    Get specific medical record details
+// @route   GET /api/doctor/medical-records/:recordId
+// @access  Private/Doctor
+exports.getMedicalRecordDetails = asyncHandler(async (req, res) => {
+  const { recordId } = req.params;
+  const doctorId = req.user.id;
+
+  const medicalRecord = await MedicalHistory.findOne({
+    _id: recordId,
+    doctorId
+  })
+    .populate('doctorId', 'name specialization')
+    .populate('patientId', 'name dateOfBirth gender');
+
+  if (!medicalRecord) {
+    return res.status(404).json({
+      success: false,
+      message: 'Medical record not found or not authorized'
+    });
+  }
+
+  res.status(200).json({
+    success: true,
+    data: medicalRecord
+  });
+});
+
+// @desc    Create new medical record for patient
+// @route   POST /api/doctor/medical-records
+// @access  Private/Doctor
+exports.createMedicalRecord = asyncHandler(async (req, res) => {
+  const { patientId, treatment, notes,diagnosis } = req.body;
+  const doctorId = req.user.id;
+console.log('Creating medical record:', req.body);
+  // Handle the typo in the schema: use "diagonosis" instead of "diagnosis"
+  const medicalHistory = await MedicalHistory.create({
+    patientId,
+    doctorId,
+    diagnosis,  // Matching the typo in the schema
+    treatment,
+    notes,
+    lastUpdated: new Date()
+  });
+  console.log('Created medical history:', medicalHistory);
+
+  res.status(201).json({
+    success: true,
+    data: medicalHistory
+  });
+});
+
+
+// @desc    Update medical record
+// @route   PUT /api/doctor/medical-records/:recordId
+// @access  Private/Doctor
+exports.updateMedicalRecord = asyncHandler(async (req, res) => {
+  const { recordId } = req.params;
+  const { diagnosis, treatment, notes } = req.body;
+
+  console.log('Updating medical record:', recordId);
+
+  const medicalHistory = await MedicalHistory.findById(recordId);
+
+  if (!medicalHistory) {
+    return res.status(404).json({
+      success: false,
+      message: 'Medical record not found'
+    });
+  }
+
+  // Match the model's field "diagonosis" (with the typo)
+  medicalHistory.diagonosis = diagnosis || medicalHistory.diagonosis;
+  medicalHistory.treatment = treatment || medicalHistory.treatment;
+  medicalHistory.notes = notes || medicalHistory.notes;
+  medicalHistory.lastUpdated = new Date();
+
+  await medicalHistory.save();
+
+  res.status(200).json({
+    success: true,
+    data: medicalHistory
+  });
+});
+
+// @desc    Delete medical record
+// @route   DELETE /api/doctor/medical-records/:recordId
+// @access  Private/Doctor
+exports.deleteMedicalRecord = asyncHandler(async (req, res) => {
+  const { recordId } = req.params;
+  const doctorId = req.user.id;
+
+  const medicalHistory = await MedicalHistory.findOneAndDelete({
+    _id: recordId,
+    doctorId: doctorId
+  });
+
+  if (!medicalHistory) {
+    return res.status(404).json({
+      success: false,
+      message: 'Medical record not found or not authorized'
+    });
+  }
+
+  res.status(200).json({
+    success: true,
+    message: 'Medical record deleted successfully',
+    data: {
+      patientId: medicalHistory.patientId
+    }
   });
 });
