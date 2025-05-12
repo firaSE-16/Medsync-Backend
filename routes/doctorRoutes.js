@@ -43,4 +43,12 @@ router.put(
   doctorController.updateAppointmentStatus
 );
 
+// Get all patients assigned to a doctor
+router.get(
+  '/patients',
+  authenticate,
+  authorize('doctor'),
+  doctorController.getDoctorPatients
+);
+
 module.exports = router;
